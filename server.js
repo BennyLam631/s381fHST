@@ -1,13 +1,15 @@
 const express = require('express');
 const app = express();
 const fs = require('fs');
-const fileUpload = require('express-fileupload');
 const ExifImage = require('exif').ExifImage;
 var lat = 0;
 var lng = 0;
-app.use(fileUpload());
-app.use(express.static('uploads'));
+var multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
 
+
+
+app.use(express.static('uploads'));
 app.set('view engine', 'ejs');
 app.get('/', function (req, res) {
 			res.redirect('/upload');
@@ -16,26 +18,20 @@ app.get('/upload', (req,res) => {
 			res.render('upload');
 });
 
-app.post('/fileupload', function (req, res) {
-			if (!req.files) {
+app.post('/fileupload', upload.single('filetoupload'), function (req, res) {
+			if (req.file == null) {
 				res.status(404);
 				res.render('error', {msg : "No file"});
 			} else {
-				let filetoupload = req.files.filetoupload;
-				uploadPath = __dirname + '/uploads/' + filetoupload.name;
-				uploadName = req.files.filetoupload.name;
-				filetoupload.mv(uploadPath, function(err) {
-				    if (err){
-				      console.log("file upload fail")
-							res.status(404);
-							res.render('error' , {msg : "No file"});
-						}
-				});
-				//call functino to get exif message
-				getinfo(uploadName);
+
+				let buff1 = fs.readFileSync(req.file.path);
+				let base64data = buff1.toString('base64');
+				let buff2 = new Buffer(base64data, 'base64');
+
+				getinfo(buff2);
 				function getinfo(fileName){
 				try {
-					new ExifImage({ image : __dirname + '/uploads/' + fileName }, function (error, exifData) {
+					new ExifImage({ image : fileName }, function (error, exifData) {
 					        if (error){
 					          console.log('Error: '+error.message);
 					        }else{
@@ -46,7 +42,7 @@ app.post('/fileupload', function (req, res) {
 										let docObj = {
 											title : req.body.title,
 											description : req.body.description,
-											photo : filetoupload.name,
+											photo : base64data,
 											make : exifData.image.Make,
 											model : exifData.image.Model,
 											modifydate : exifData.image.ModifyDate,
@@ -79,8 +75,6 @@ app.get('/map/', function (req, res) {
 		coordinate : docObj2,
 	});
 });
-
-
 
 
 function getLatLng(data){
