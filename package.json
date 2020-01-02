@@ -1,0 +1,17 @@
+{
+    "name": "server",
+    "description": "Node.js EXPRESS EJS app",
+    "author": "Raymond SO <rso@ouhk.edu.hk>",
+    "version": "0.0.1",
+    "dependencies": {
+        "ejs": "*",
+        "exif": "^0.6.0",
+        "express": "^4.17.1",
+        "express-fileupload": "^1.1.6",
+        "multer": "^1.4.2"
+    },
+    "engine": "node >= 0.10.0",
+    "scripts": {
+        "start": "node server"
+    }
+}
